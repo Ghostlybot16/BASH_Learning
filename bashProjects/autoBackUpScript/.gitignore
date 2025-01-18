@@ -1,0 +1,2 @@
+#Ignore backup files with time stamps 
+bashProjects/autoBackUpScript/backup_*.tar.gz
