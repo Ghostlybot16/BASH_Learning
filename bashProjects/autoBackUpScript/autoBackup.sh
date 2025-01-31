@@ -16,6 +16,10 @@ fi
 SOURCE_FOLDER=$1 # The directory which is being backedup
 DESTINATION_FOLDER=$2 # The directory where the backup is stored 
 
+# Define the path to the log file
+# It will be placed within the same directory as the backup files (DESTINATION_FOLDER) 
+LOG_FILE="$DESTINATION_FOLDER/backup.log"
+
 # Check to see if the source directory exists and is valid 
 if [ ! -d "$SOURCE_FOLDER" ]; then
 	echo "Error: Source directory '$SOURCE' does not exist."
@@ -32,12 +36,17 @@ fi
 #Define the backup filename with a timestamp 
 BACKUP_COMMAND="$DESTINATION_FOLDER/backup_$(date +"%y-%b%d_%H-%M-%S").tar.gz"
 
-# Create the backup using the source directory name
-tar -czf $BACKUP_COMMAND $SOURCE_FOLDER
-
-# Backup success message 
-echo "Backup of $SOURCE_FOLDER created successfully: $BACKUP_COMMAND"
+# Create the backup file 
+# if block to check if the command runs successfully
+if tar -czf "$BACKUP_COMMAND" "$SOURCE_FOLDER"; 
+then
+	# "tee" command does two things at once, logs the success message both in the terminal and in the log file. 
+	echo "$(date +"%Y-%m-%d_%H-%M-%S") - Backup created: $BACKUP_COMMAND" | tee -a "$LOG_FILE"
+else
+	echo "$(date +"%Y-%m-%d_%H-%M-%S") - ERROR: Backup creation failed for $SOURCE_FOLDER" | tee -a "$LOG_FILE"
+	exit 1
+fi
 
 # Call the delete_old_backups function from the sources library 
-delete_old_backups "$DESTINATION_FOLDER"
+delete_old_backups "$DESTINATION_FOLDER" "$LOG_FILE"
 
